@@ -1,0 +1,30 @@
+services:
+  trainer:
+    image: daeseok2233/codeit_mission15:latest   # 연구자1이 만든 Docker 이미지 사용
+    volumes:
+      - ./shared:/shared   # 호스트의 ./shared 폴더 ↔ 컨테이너 /shared 폴더 (모델/메트릭 공유)
+    command: >
+      bash -lc 'python /app/train.py 
+        --train_csv /data/mission15_train.csv       # 학습 데이터 CSV
+        --model_out /shared/model.pkl               # 학습된 모델 저장 경로(공유폴더)
+        --metrics_out /shared/metrics.json          # 성능 지표 저장 경로(공유폴더)
+        --refit_full                                # 전체 데이터로 재학습 옵션
+        && cp /data/mission15_test.csv /shared/mission15_test.csv' 
+        # 끝나고 테스트 데이터도 shared 폴더에 복사
+    restart: "no"   # 컨테이너가 종료되면 자동 재시작 안 함
+
+  lab:
+    image: daeseok2233/codeit_mission15:latest   # trainer와 동일 이미지 재사용
+    ports:
+      - "8888:8888"   # 호스트 8888번 포트 ↔ 컨테이너 8888번 포트 (Jupyter 접속용)
+    volumes:
+      - ./shared:/shared     # trainer가 만든 모델/메트릭 파일을 그대로 접근 가능
+      - ./notebooks:/workspace   # 로컬 notebooks 디렉토리 ↔ 컨테이너 내부 /workspace
+    command: >
+      bash -lc "mkdir -p /workspace && jupyter lab   # /workspace 폴더 만들고 주피터랩 실행
+      --ServerApp.token=''        # 접속 토큰 비활성화 (비밀번호 없이 바로 접속)
+      --ServerApp.ip=0.0.0.0      # 외부 접속 허용 (컨테이너 밖에서 접근 가능)
+      --no-browser                # 자동으로 브라우저 열지 않음
+      --port=8888                 # 포트 8888 사용
+      --ServerApp.root_dir=/      # Jupyter의 루트 디렉토리 설정 (컨테이너 전체 탐색 가능)
+      --allow-root"               # root 계정으로 실행 허용

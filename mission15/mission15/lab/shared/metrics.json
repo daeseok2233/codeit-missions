@@ -1,0 +1,14 @@
+{
+  "holdout_rmse": 2.037492160567813,
+  "cv_best_rmse": 2.0484412264355543,
+  "best_alpha": 0.1,
+  "features": [
+    "Hours Studied",
+    "Previous Scores",
+    "Extracurricular Activities",
+    "Sleep Hours",
+    "Sample Question Papers Practiced"
+  ],
+  "target": "Performance Index",
+  "refit_full": true
+}
